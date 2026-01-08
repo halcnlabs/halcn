@@ -1,0 +1,11 @@
+target/
+node_modules/
+.anchor/
+dist/
+*.so
+*.dylib
+*.log
+.DS_Store
+.env
+.env.local
+main.py

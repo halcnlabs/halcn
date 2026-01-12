@@ -1,3 +1,5 @@
 [workspace]
-members = []
+members = [
+    "programs/halcn-core",
+]
 resolver = "2"

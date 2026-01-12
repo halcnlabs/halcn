@@ -1,0 +1,21 @@
+[package]
+name = "halcn-core"
+version = "0.4.2"
+description = "Cross-Market Signal Propagation Protocol - Predict where signals land before they arrive"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "halcn_core"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"

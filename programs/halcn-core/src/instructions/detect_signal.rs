@@ -47,5 +47,7 @@ pub fn handler(
     signal.consumed = false;
     signal.bump = ctx.bumps.signal;
 
+    msg!("Signal detected: market={}, threshold={}", signal.source_market, threshold);
+
     Ok(())
 }

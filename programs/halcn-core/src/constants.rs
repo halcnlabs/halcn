@@ -21,3 +21,6 @@ pub const BPS_DENOMINATOR: u64 = 10_000;
 
 /// Seed prefix for signal account PDAs.
 pub const SIGNAL_SEED: &[u8] = b"signal";
+
+/// Seed prefix for propagation path PDAs.
+pub const PROPAGATION_SEED: &[u8] = b"propagation";

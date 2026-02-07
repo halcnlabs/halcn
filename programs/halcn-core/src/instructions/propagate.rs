@@ -36,6 +36,21 @@ pub fn handler(
 ) -> Result<()> {
     require!(!path_nodes.is_empty(), HalcnError::EmptyPath);
     require!(path_nodes.len() <= MAX_PATH_HOPS, HalcnError::PathTooLong);
+    require!(
+        edge_weights.len() == path_nodes.len().saturating_sub(1),
+        HalcnError::PathWeightMismatch
+    );
+    require!(
+        decay_factors.len() == path_nodes.len().saturating_sub(1),
+        HalcnError::PathDecayMismatch
+    );
+
+    for name in &path_nodes {
+        require!(name.len() <= MAX_MARKET_LEN, HalcnError::MarketNameTooLong);
+    }
+    for &decay in &decay_factors {
+        require!(decay <= BPS_DENOMINATOR, HalcnError::DecayFactorInvalid);
+    }
 
     let total_latency_ms: u64 = edge_weights.iter().sum();
 
@@ -50,6 +65,9 @@ pub fn handler(
     prop.bump = ctx.bumps.propagation_path;
 
     ctx.accounts.signal.consumed = true;
+
+    msg!("Propagation path computed: hops={}, latency={}ms",
+        prop.path_nodes.len(), total_latency_ms);
 
     Ok(())
 }

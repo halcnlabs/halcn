@@ -21,4 +21,14 @@ pub mod halcn_core {
     ) -> Result<()> {
         instructions::detect_signal::handler(ctx, source_market, threshold, window_ms)
     }
+
+    /// Compute and store the propagation path for a detected signal.
+    pub fn propagate(
+        ctx: Context<Propagate>,
+        path_nodes: Vec<String>,
+        edge_weights: Vec<u64>,
+        decay_factors: Vec<u64>,
+    ) -> Result<()> {
+        instructions::propagate::handler(ctx, path_nodes, edge_weights, decay_factors)
+    }
 }

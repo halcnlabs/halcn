@@ -19,7 +19,6 @@ impl SignalAccount {
     pub const SIZE: usize = 8 + 32 + 4 + MAX_MARKET_LEN + 8 + 8 + 8 + 1 + 8 + 1;
 }
 
-/// Records the propagation path a signal takes across markets.
 #[account]
 #[derive(Default)]
 pub struct PropagationPath {
@@ -29,6 +28,7 @@ pub struct PropagationPath {
     pub edge_weights: Vec<u64>,
     pub decay_factors: Vec<u64>,
     pub total_latency_ms: u64,
+    pub hop_count: u8,
     pub computed_at: i64,
     pub bump: u8,
 }
@@ -38,5 +38,5 @@ impl PropagationPath {
         + 4 + (MAX_PATH_HOPS * (4 + MAX_MARKET_LEN))
         + 4 + (MAX_PATH_HOPS * 8)
         + 4 + (MAX_PATH_HOPS * 8)
-        + 8 + 8 + 1;
+        + 8 + 1 + 8 + 1;
 }

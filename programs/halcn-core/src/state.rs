@@ -40,3 +40,23 @@ impl PropagationPath {
         + 4 + (MAX_PATH_HOPS * 8)
         + 8 + 1 + 8 + 1;
 }
+
+#[account]
+#[derive(Default)]
+pub struct ImpactPrediction {
+    pub propagation_path: Pubkey,
+    pub authority: Pubkey,
+    pub predicted_magnitude_bps: u64,
+    pub confidence_lower_bps: u64,
+    pub confidence_upper_bps: u64,
+    pub confidence_level_bps: u64,
+    pub eta_ms: u64,
+    pub predicted_at: i64,
+    pub alert_emitted: bool,
+    pub target_market: String,
+    pub bump: u8,
+}
+
+impl ImpactPrediction {
+    pub const SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 8 + 1 + 4 + MAX_MARKET_LEN + 1;
+}

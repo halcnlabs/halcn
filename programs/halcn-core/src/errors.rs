@@ -20,6 +20,12 @@ pub enum HalcnError {
     #[msg("Signal has already been consumed")]
     SignalAlreadyConsumed,
 
+    #[msg("Confidence level out of valid range")]
+    ConfidenceOutOfRange,
+
+    #[msg("Time horizon exceeds maximum")]
+    TimeHorizonTooLarge,
+
     #[msg("Market identifier exceeds maximum length")]
     MarketNameTooLong,
 
@@ -29,6 +35,15 @@ pub enum HalcnError {
     #[msg("Decay factor exceeds basis points denominator")]
     DecayFactorInvalid,
 
+    #[msg("Decay factor below minimum threshold")]
+    DecayFactorTooLow,
+
     #[msg("Unauthorized signer")]
     Unauthorized,
+
+    #[msg("Arithmetic overflow in calculation")]
+    MathOverflow,
+
+    #[msg("Invalid protocol version")]
+    InvalidVersion,
 }

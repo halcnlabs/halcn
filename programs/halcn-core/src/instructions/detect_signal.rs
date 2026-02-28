@@ -2,7 +2,9 @@ use anchor_lang::prelude::*;
 
 use crate::constants::*;
 use crate::errors::HalcnError;
+use crate::events::SignalDetected;
 use crate::state::SignalAccount;
+use crate::utils::validate_market_name;
 
 #[derive(Accounts)]
 #[instruction(source_market: String)]
@@ -28,7 +30,10 @@ pub fn handler(
     threshold: u64,
     window_ms: u64,
 ) -> Result<()> {
-    require!(source_market.len() <= MAX_MARKET_LEN, HalcnError::MarketNameTooLong);
+    require!(
+        validate_market_name(&source_market, MAX_MARKET_LEN),
+        HalcnError::MarketNameTooLong
+    );
     require!(
         threshold >= MIN_THRESHOLD_BPS && threshold <= MAX_THRESHOLD_BPS,
         HalcnError::ThresholdOutOfRange
@@ -38,16 +43,31 @@ pub fn handler(
         HalcnError::WindowOutOfRange
     );
 
+    let clock = Clock::get()?;
     let signal = &mut ctx.accounts.signal;
     signal.authority = ctx.accounts.authority.key();
-    signal.source_market = source_market;
+    signal.source_market = source_market.clone();
     signal.threshold = threshold;
     signal.window_ms = window_ms;
-    signal.detected_at = Clock::get()?.unix_timestamp;
+    signal.detected_at = clock.unix_timestamp;
     signal.consumed = false;
+    signal.signal_index = 0;
     signal.bump = ctx.bumps.signal;
 
-    msg!("Signal detected: market={}, threshold={}", signal.source_market, threshold);
+    emit!(SignalDetected {
+        signal: signal.key(),
+        authority: signal.authority,
+        source_market,
+        threshold,
+        window_ms,
+        timestamp: clock.unix_timestamp,
+    });
+
+    msg!(
+        "Signal detected: market={}, threshold={}",
+        signal.source_market,
+        threshold
+    );
 
     Ok(())
 }

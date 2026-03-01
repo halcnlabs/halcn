@@ -2,7 +2,9 @@ use anchor_lang::prelude::*;
 
 use crate::constants::*;
 use crate::errors::HalcnError;
+use crate::events::PropagationComputed;
 use crate::state::{PropagationPath, SignalAccount};
+use crate::utils::validate_market_name;
 
 #[derive(Accounts)]
 pub struct Propagate<'info> {
@@ -46,13 +48,19 @@ pub fn handler(
     );
 
     for name in &path_nodes {
-        require!(name.len() <= MAX_MARKET_LEN, HalcnError::MarketNameTooLong);
+        require!(
+            validate_market_name(name, MAX_MARKET_LEN),
+            HalcnError::MarketNameTooLong
+        );
     }
     for &decay in &decay_factors {
         require!(decay <= BPS_DENOMINATOR, HalcnError::DecayFactorInvalid);
+        require!(decay >= MIN_DECAY_FACTOR, HalcnError::DecayFactorTooLow);
     }
 
     let total_latency_ms: u64 = edge_weights.iter().sum();
+    let hop_count = path_nodes.len().saturating_sub(1) as u8;
+    let clock = Clock::get()?;
 
     let prop = &mut ctx.accounts.propagation_path;
     prop.signal = ctx.accounts.signal.key();
@@ -61,13 +69,26 @@ pub fn handler(
     prop.edge_weights = edge_weights;
     prop.decay_factors = decay_factors;
     prop.total_latency_ms = total_latency_ms;
-    prop.computed_at = Clock::get()?.unix_timestamp;
+    prop.hop_count = hop_count;
+    prop.computed_at = clock.unix_timestamp;
     prop.bump = ctx.bumps.propagation_path;
 
     ctx.accounts.signal.consumed = true;
 
-    msg!("Propagation path computed: hops={}, latency={}ms",
-        prop.path_nodes.len(), total_latency_ms);
+    emit!(PropagationComputed {
+        propagation_path: prop.key(),
+        signal: ctx.accounts.signal.key(),
+        authority: ctx.accounts.authority.key(),
+        hop_count,
+        total_latency_ms,
+        timestamp: clock.unix_timestamp,
+    });
+
+    msg!(
+        "Propagation path computed: hops={}, latency={}ms",
+        hop_count,
+        total_latency_ms
+    );
 
     Ok(())
 }

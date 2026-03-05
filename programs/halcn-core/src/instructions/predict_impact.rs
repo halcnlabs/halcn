@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::constants::*;
 use crate::errors::HalcnError;
+use crate::events::ImpactPredicted;
 use crate::state::{ImpactPrediction, PropagationPath};
 use crate::utils::{compute_decay_chain, confidence_interval_half_width};
 
@@ -43,10 +44,8 @@ pub fn handler(
 
     let magnitude_bps =
         compute_decay_chain(&prop.decay_factors).ok_or(error!(HalcnError::MathOverflow))?;
-
     let half_width = confidence_interval_half_width(magnitude_bps, confidence_bps)
         .ok_or(error!(HalcnError::MathOverflow))?;
-
     let lower = magnitude_bps.saturating_sub(half_width);
     let upper = magnitude_bps.saturating_add(half_width);
 
@@ -73,10 +72,21 @@ pub fn handler(
     prediction.target_market = target_market;
     prediction.bump = ctx.bumps.prediction;
 
-    msg!(
-        "Impact predicted: magnitude={}bps, eta={}ms",
+    emit!(ImpactPredicted {
+        prediction: prediction.key(),
+        propagation_path: prop.key(),
+        authority: ctx.accounts.authority.key(),
         magnitude_bps,
-        eta_ms
+        confidence_bps,
+        eta_ms,
+        timestamp: clock.unix_timestamp,
+    });
+
+    msg!(
+        "Impact predicted: magnitude={}bps, eta={}ms, confidence={}bps",
+        magnitude_bps,
+        eta_ms,
+        confidence_bps
     );
 
     Ok(())

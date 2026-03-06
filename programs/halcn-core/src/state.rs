@@ -60,3 +60,18 @@ pub struct ImpactPrediction {
 impl ImpactPrediction {
     pub const SIZE: usize = 8 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 8 + 1 + 4 + MAX_MARKET_LEN + 1;
 }
+
+#[account]
+#[derive(Default)]
+pub struct ProtocolState {
+    pub admin: Pubkey,
+    pub total_signals: u64,
+    pub total_paths: u64,
+    pub total_predictions: u64,
+    pub version: u8,
+    pub bump: u8,
+}
+
+impl ProtocolState {
+    pub const SIZE: usize = 8 + 32 + 8 + 8 + 8 + 1 + 1;
+}

@@ -8,4 +8,5 @@ dist/
 .DS_Store
 .env
 .env.local
+coverage/
 main.py
